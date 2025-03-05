@@ -1,54 +1,108 @@
-//! This class implements a life board in the Conway's Game of Life.
-/*!
- * @file life.h
- *
- * @details Class Life, to simulate the Conway's Game of Life.
- *
- * @author	Selan R dos Santos, <selan.rds@gmail.com>
- * @date	2015, updated 2015-04-03
- * @update 2019, April 2nd.
- * @version     v1.1
- */
+#ifndef LIFE_H  // Correcting the include guard
+#define LIFE_H
 
-#ifndef _LIFE_H_
-#define _LIFE_H_
-
-#include <cassert>
-#include <cstring>  // std::memcpy().
-#include <iostream>
 #include <set>
-#include <sstream>  // std::ostringstream
-#include <stdexcept>
-#include <string>
 #include <vector>
+#include <string>
+#include <stdexcept>
+#include <sstream>
+#include <iostream>
 
-using std::cerr;
-using std::cout;
-using std::endl;
-using std::set;
-using std::string;
-using std::vector;
-
-#include "canvas.h"
+#include "data.h"
+#include "../lib/canvas.h"
+#include "../lib/common.h"
 
 namespace life {
+    class Life {
+        private:
+            std::set<std::string> m_allMatrixes;
+            std::vector<std::vector<int>> m_currentMatrix;
 
-/// A life configuration.
-class LifeCfg {
+            int m_rows;
+            int m_cols;
+            std::vector<int> m_surviveConditions = {2, 3};
+            std::vector<int> m_bornConditions = {3};
+            int m_maxGen = 0;
+            std::string m_cfgFile;
+            std::string m_gameRules = "B3/S23"; // sets conditions
+            bool m_image;
+            std::string m_aliveColor = "YELLOW";
+            int m_blockSize = 10;
+            std::string m_bkgColor = "RED";
+            std::string m_imagePath;
+            int m_fps = 2;
+            char m_liveChar = '*';
 
-   public:
-    LifeCfg();  // lines, columns
-    ~LifeCfg(){ /* empty */ };
-    /* void set_alive(const std::vector<Location2>&);
-    void update(void);
-    std::string to_string(void) const;
-    bool operator==(const LifeCfg&) const;
-    LifeCfg& operator=(const LifeCfg& _rhs);
-    bool extinct(void) const;
-    size_type rows(void) const;
-    size_type cols(void) const; */
-};
+        public:
+            Life(const Data& data) {
+                // Initialize member variables using the Data object
+                const auto& config = data.get_variablesAndValues();
 
-}  // namespace life
+                if (config.find("input_cfg") != config.end()) {
+                    m_cfgFile = config.at("input_cfg");
+                    if(m_cfgFile.length() >=2 && m_cfgFile.front() == '"'  && m_cfgFile.back() == '"'){
+                        m_cfgFile = m_cfgFile.substr(1, m_cfgFile.length() - 2);
+                    }
+                    read_matrix_config(m_cfgFile);
+                }
+                if (config.find("generate_image") != config.end()) {
+                    m_image = config.at("generate_image") == "true";
+                }
+                if (config.find("max_gen") != config.end()) {
+                    m_maxGen = std::stoi(config.at("max_gen"));
+                }
+                if (config.find("alive") != config.end()) {
+                    m_aliveColor = config.at("alive");
+                    for (auto& x : m_aliveColor) { 
+                        x = tolower(x); 
+                    } 
+                }
+                if (config.find("bkg") != config.end()) {
+                    m_bkgColor = config.at("bkg");
+                    for (auto& x : m_bkgColor) { 
+                        x = tolower(x); 
+                    } 
+                }
+                if (config.find("block_size") != config.end()) {
+                    m_blockSize =  std::stoi(config.at("block_size"));
+                }
+                if (config.find("path") != config.end()) {
+                    m_imagePath = config.at("path");
+                    if(m_imagePath.length() >=2 && m_imagePath.front() == '"'  && m_imagePath.back() == '"'){
+                        m_imagePath = m_imagePath.substr(1, m_imagePath.length() - 2);
+                    }
+                }
+                if (config.find("fps") != config.end()) {
+                    m_fps = std::stoi(config.at("fps"));
+                }
+                if (config.find("game_rules") != config.end()) {
+                    m_gameRules = config.at("game_rules");
+                    if(m_gameRules.length() >=2 && m_gameRules.front() == '"'  && m_gameRules.back() == '"'){
+                        m_gameRules = m_gameRules.substr(1, m_gameRules.length() - 2);
+                    }
+                    set_conditions(m_gameRules);
+                }
 
-#endif
+                m_currentMatrix.resize(m_rows, std::vector<int>(m_cols, 0));
+            }
+
+            std::set<std::string> get_m_allMatrixes(){return m_allMatrixes;}
+            std::vector<std::vector<int>> get_m_currentMatrix(){return m_currentMatrix;}
+            int get_rows() {return m_rows;}
+            int get_cols() {return m_cols;}
+            void read_matrix_config(std::string path);
+            std::string extractConfigPrefix();
+            void set_conditions(std::string input);
+            std::vector<std::pair<int, int>> find_dead_neighbors(int x, int y);
+            int count_live_neighbors(int x, int y);
+            void set_borders();
+            std::vector<std::vector<int>> generate_new_matrix();
+            int count_alive_cells();
+            std::string generate_matrix_key();
+            bool matrix_is_repeated(std::string matrixKey);
+            void simulation_loop();
+            void print_matrix(int& genCount);
+    };
+}
+
+#endif // LIFE_H
