@@ -32,29 +32,24 @@ Ensure that you have a C++ compiler installed. If you don't have one, you can in
 
 ### Installation
 
-1. Clone this repository:
+Clone this repository:
 
    ```bash
    git clone https://github.com/your-username/game-of-life.git
    ```
 
-2. Navigate to the project directory:
+### Compiling and Runnig
 
-   ```bash
-   cd game-of-life
-   ```
+To compile and run the game, follow these steps:
 
-3. Compile the program:
-
-   ```bash
-   g++ -o game_of_life main.cpp
-   ```
-
-4. Run the simulation:
-
-   ```bash
-   ./game_of_life
-   ```
+1. Ensure you have CMake installed on your system.
+2. Clone the repository to your local machine.
+3. Navigate to the project directory in your terminal.
+4. Go into the source file: `cd source`
+4. Create a build directory: `mkdir build && cd build`.
+5. Generate the build files with CMake: `cmake ..`.
+6. Compile the project: `cmake --build .`.
+7. Run the compiled executable: `./glife`. followed by the path of the config file (e.g. './glife ../config/glife.ini').
 
 ### Usage
 
